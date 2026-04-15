@@ -1,3 +1,5 @@
+import { MetricFormat } from './types';
+
 export const PLUGIN_ID = 'timurdigital-claudestats-app';
 export const PLUGIN_BASE_URL = `/a/${PLUGIN_ID}`;
 
@@ -11,9 +13,12 @@ export const ROUTES = {
 } as const;
 
 // Claude Code OpenTelemetry metric names
-// Note: OTEL collector adds units to metric names (e.g., _USD_total, _tokens_total)
-export const METRICS = {
-  // Counters
+// Prometheus format: metrics pass through Prometheus/OTEL Collector (adds _total, unit suffixes)
+// OTLP format: metrics sent directly via OTLP to Mimir/Grafana Cloud (original names)
+
+export type MetricNames = { [K in keyof typeof METRICS_PROMETHEUS]: string };
+
+const METRICS_PROMETHEUS = {
   SESSION_COUNT: 'claude_code_session_count_total',
   LINES_OF_CODE: 'claude_code_lines_of_code_count_total',
   PULL_REQUESTS: 'claude_code_pull_request_count_total',
@@ -23,6 +28,24 @@ export const METRICS = {
   TOOL_DECISION: 'claude_code_code_edit_tool_decision_total',
   ACTIVE_TIME: 'claude_code_active_time_seconds_total',
 } as const;
+
+const METRICS_OTLP = {
+  SESSION_COUNT: 'claude_code_session_count',
+  LINES_OF_CODE: 'claude_code_lines_of_code_count',
+  PULL_REQUESTS: 'claude_code_pull_request_count',
+  COMMITS: 'claude_code_commit_count',
+  COST_USAGE: 'claude_code_cost_usage',
+  TOKEN_USAGE: 'claude_code_token_usage',
+  TOOL_DECISION: 'claude_code_code_edit_tool_decision',
+  ACTIVE_TIME: 'claude_code_active_time_total',
+} as const satisfies MetricNames;
+
+export function getMetrics(format: MetricFormat = 'prometheus'): MetricNames {
+  return format === 'otlp' ? METRICS_OTLP : METRICS_PROMETHEUS;
+}
+
+/** @deprecated Use getMetrics(format) instead. Kept for backward compatibility. */
+export const METRICS = METRICS_PROMETHEUS;
 
 // Label names from OTEL
 export const LABELS = {
