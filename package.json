@@ -79,5 +79,9 @@
   "packageManager": "npm@10.0.0",
   "engines": {
     "node": ">=20"
+  },
+  "overrides": {
+    "flatted": "^3.4.2",
+    "serialize-javascript": "^7.0.5"
   }
 }
